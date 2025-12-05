@@ -248,7 +248,7 @@ if (scanBtn) {
     // ---------------- Spell Correction via Gemini ----------------
     let correctedIngredients = [];
     try {
-      const GEMINI_API_KEY = "AIzaSyAOfHJe1Y-sOy-RV1uxaX53NmYFXQPgTew";
+      const GEMINI_API_KEY = "AIzaSyBEm4YK4MGmE5RmZ8-maI75eCy3a0QLpvs";
       const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
       const prompt = `Correct the spelling of these ingredients and return them as a comma-separated list:\n${rawIngredients.join(", ")}`;
 
