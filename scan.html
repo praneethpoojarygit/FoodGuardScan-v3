@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FoodGuard Scan</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* --- Reset & Base --- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #667eea;
+      --secondary: #764ba2;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --gray-100: #f9fafb;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-500: #6b7280;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #dff7e1 0%, #f3e8ff 100%);
+      min-height: 100vh;
+      color: var(--gray-800);
+    }
+
+    /* --- Header --- */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 0 0 20px 20px;
+    }
+
+    .profile-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .profile-logo img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid var(--primary);
+    }
+
+    .profile-logo h2 {
+      font-size: 1.5rem;
+      color: var(--gray-700);
+      font-weight: 700;
+    }
+
+    .profile-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .profile-info h2 {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--gray-700);
+    }
+
+    .profile-img {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      border: 3px solid var(--primary);
+      object-fit: cover;
+    }
+
+    .logout-btn {
+      background: linear-gradient(135deg, var(--danger), #ef4444);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+    }
+
+    /* --- Main Layout --- */
+    .main-layout {
+      display: flex;
+      height: calc(100vh - 80px);
+    }
+
+    /* --- Sidebar --- */
+    .sidebar {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      padding: 1.5rem;
+      box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar.closed {
+      transform: translateX(-100%);
+    }
+
+    .toggle-sidebar {
+      position: absolute;
+      top: 20px;
+      right: -40px;
+      background: var(--primary);
+      color: white;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 0 8px 8px 0;
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+
+    .toggle-sidebar:hover {
+      background: #5a6fd8;
+    }
+
+    .sidebar h3 {
+      color: var(--gray-700);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 12px;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+
+    .history-item:hover {
+      background: var(--gray-100);
+      transform: translateX(4px);
+      border-color: var(--primary);
+    }
+
+    .history-item img {
+      width: 45px;
+      height: 45px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    /* --- Container --- */
+    .container {
+      flex: 1;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      text-align: center;
+      overflow-y: auto;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    /* --- Steps --- */
+    .steps {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--gray-200);
+      color: var(--gray-500);
+      border-radius: 50px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .step.active {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      right: -30px;
+      width: 60px;
+      height: 2px;
+      background: var(--gray-300);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .step.active:not(:last-child)::after {
+      background: linear-gradient(90deg, var(--secondary), var(--gray-300));
+    }
+
+    /* --- Image Preview --- */
+    #preview,
+    #camera {
+      display: none;
+      width: 100%;
+      max-width: 500px;
+      border-radius: 16px;
+      margin-bottom: 2rem;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    #preview {
+      animation: fadeInScale 0.5s ease;
+    }
+
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* --- Buttons --- */
+    .btn {
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0.5rem;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--success), #059669);
+    }
+
+    #cameraBtn {
+      background: linear-gradient(135deg, #fbbf24, #d97706);
+    }
+
+    #captureBtn {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    /* --- Search & Results --- */
+    .search-box {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .search-box input,
+    .search-box select {
+      padding: 0.75rem 1rem;
+      border: 2px solid var(--gray-300);
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .search-box input:focus,
+    .search-box select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .result-box {
+      background: var(--gray-100);
+      padding: 1.5rem;
+      border-radius: 16px;
+      margin: 2rem 0;
+      text-align: left;
+      font-size: 15px;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    /* --- Ingredients --- */
+    .ingredients-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    .ingredient-card {
+      background: white;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      position: relative;
+      min-width: 120px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      animation: slideInUp 0.5s ease;
+    }
+
+    .ingredient-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .ingredient-card.good {
+      color: var(--success);
+      border-color: rgba(22, 163, 74, 0.2);
+    }
+
+    .ingredient-card.good::before {
+      background: var(--success);
+    }
+
+    .ingredient-card.moderate {
+      color: var(--warning);
+      border-color: rgba(217, 119, 6, 0.2);
+    }
+
+    .ingredient-card.moderate::before {
+      background: var(--warning);
+    }
+
+    .ingredient-card.bad {
+      color: var(--danger);
+      border-color: rgba(220, 38, 38, 0.2);
+      animation: pulse 2s infinite;
+    }
+
+    .ingredient-card.bad::before {
+      background: var(--danger);
+    }
+
+    .ingredient-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+      border-color: currentColor;
+    }
+
+    .ingredient-card .tooltip {
+      visibility: hidden;
+      opacity: 0;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      position: absolute;
+      bottom: 130%;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: 12px;
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+
+    .ingredient-card:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* --- Chatbox --- */
+    .chatbox {
+      width: 320px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -2px 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .chat-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--gray-100);
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      min-height: 400px;
+      max-height: 500px;
+    }
+
+    .chat-message {
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 16px;
+      max-width: 85%;
+      animation: messageSlideIn 0.3s ease;
+    }
+
+    .chat-message.user {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      margin-left: auto;
+      border-bottom-right-radius: 6px;
+    }
+
+    .chat-message.ai {
+      background: var(--gray-100);
+      color: var(--gray-700);
+      margin-right: auto;
+      border-bottom-left-radius: 6px;
+    }
+
+    @keyframes messageSlideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .chat-input {
+      display: flex;
+      border-top: 1px solid var(--gray-200);
+      background: white;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 1rem;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    .chat-input button {
+      padding: 1rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 60px;
+    }
+
+    .chat-input button:hover {
+      background: #5a6fd8;
+    }
+
+    /* --- Loading Overlay --- */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .loading-content {
+      text-align: center;
+      color: white;
+    }
+
+    .spinner {
+      width: 60px; height: 60px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 1200px) {
+      .main-layout { flex-direction: column; }
+      .sidebar { width: 100%; transform: translateY(-100%); }
+      .sidebar.open { transform: translateY(0); }
+      .chatbox { width: 100%; }
+    }
+
+    @media (max-width: 768px) {
+      .container { margin: 1rem; padding: 1rem; }
+      .search-box { flex-direction: column; }
+      .steps { flex-direction: column; gap: 1rem; }
+      .step:not(:last-child)::after { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="profile-header">
+  <div class="profile-logo">
+    <img src="assets/LOGO.jpg" alt="FoodGuardScan Logo">
+    <h2>FoodGuard Scan</h2>
+  </div>
+  <div class="profile-info">
+    <img id="profilePic" src="" class="profile-img" alt="User profile picture" style="display:none;">
+    <h2 id="welcomeName">Welcome!</h2>
+  </div>
+  <button class="logout-btn" onclick="logout()">
+    <i class="fas fa-sign-out-alt"></i>
+    Logout
+  </button>
+</header>
+
+<div class="main-layout">
+
+  <!-- Left Sidebar (Recent Scans) -->
+  <div class="sidebar" id="sidebar">
+    <button type="button" class="toggle-sidebar" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+      <i class="fas fa-bars"></i>
+    </button>
+    <h3>
+      <i class="fas fa-history"></i>
+      Recent Scans
+    </h3>
+    <div id="historyList"></div>
+  </div>
+
+  <!-- Middle Scanner -->
+  <main class="container">
+
+    <div class="steps">
+      <div class="step active" id="step1">
+        <i class="fas fa-upload"></i>
+        Upload
+      </div>
+      <div class="step" id="step2">
+        <i class="fas fa-search"></i>
+        Scan
+      </div>
+      <div class="step" id="step3">
+        <i class="fas fa-chart-line"></i>
+        Analysis
+      </div>
+    </div>
+
+    <img id="preview">
+
+    <div style="margin: 2rem 0;">
+      <input type="file" id="imageInput" accept="image/*" style="display: none;">
+      <label for="imageInput" style="border: 3px dashed var(--gray-300); padding: 3rem; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; background: var(--gray-100); display: block;">
+        <i class="fas fa-camera-retro" style="font-size: 3rem; color: var(--primary); display: block; margin-bottom: 1rem;"></i>
+        <div style="font-size: 1.2rem; color: var(--gray-500); margin-bottom: 0.5rem;">Click to upload food product ingredient list image</div>
+        <div style="color: var(--gray-400); font-size: 0.9rem;">Supports JPG, PNG files</div>
+      </label>
+    </div>
+
+    <button id="cameraBtn" class="btn">
+      <i class="fas fa-camera"></i>
+      Use Camera
+    </button>
+    
+    <video id="camera" autoplay playsinline></video>
+    <button type="button" id="captureBtn" class="btn" style="display:none;">
+      <i class="fas fa-camera-retro"></i>
+      Capture
+    </button>
+
+    <button type="button" id="scanBtn" class="btn primary">
+      <i class="fas fa-magic"></i>
+      Scan Ingredients
+    </button>
+
+    <div class="search-box">
+      <input type="text" id="searchIngredient" placeholder="Search ingredient..." aria-label="Search by ingredient name">
+      <select id="filterRisk" aria-label="Filter by risk level">
+        <option value="all">All</option>
+        <option value="good">Good</option>
+        <option value="moderate">Moderate</option>
+        <option value="bad">Bad</option>
+      </select>
+    </div>
+
+    <div id="scanResult" class="result-box" style="display: none;"></div>
+    <div id="aiAnalysis" class="ingredients-container"></div>
+
+  </main>
+
+  <!-- Chatbox -->
+  <div class="chatbox">
+    <div class="chat-header">
+      <strong>AI Food Assistant</strong>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-message ai">
+        Hi! I'm your AI food assistant. Upload a food image and I'll analyze the ingredients for you!
+      </div>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="Ask about ingredients..." aria-label="Ask a question about ingredients">
+      <button type="button" onclick="sendChat()" aria-label="Send message">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-content">
+    <div class="spinner"></div>
+    <h3>Analyzing ingredients...</h3>
+    <p>Our AI is examining your food for health insights</p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
